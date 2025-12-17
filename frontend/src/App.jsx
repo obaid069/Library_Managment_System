@@ -2,9 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
+import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import DoctorsList from './pages/DoctorsList';
 
 // Patient pages
 import PatientDashboard from './pages/patient/PatientDashboard';
@@ -13,6 +14,7 @@ import MyAppointments from './pages/patient/MyAppointments';
 
 // Doctor pages
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import CompleteAppointment from './pages/doctor/CompleteAppointment';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -23,24 +25,37 @@ import AddDoctor from './pages/admin/AddDoctor';
 
 // Staff pages
 import StaffDashboard from './pages/staff/StaffDashboard';
+import PharmacyManagement from './pages/staff/PharmacyManagement';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
           <Routes>
-            {/* Public Routes */}
+            {/* Public Routes - No Layout/Sidebar */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* Doctors List - Accessible to all authenticated users */}
+            <Route
+              path="/doctors"
+              element={
+                <ProtectedRoute allowedRoles={['patient', 'doctor', 'admin', 'staff']}>
+                  <Layout>
+                    <DoctorsList />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
             {/* Patient Routes */}
             <Route
               path="/patient/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['patient']}>
-                  <PatientDashboard />
+                  <Layout>
+                    <PatientDashboard />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -48,7 +63,9 @@ function App() {
               path="/patient/book-appointment"
               element={
                 <ProtectedRoute allowedRoles={['patient']}>
-                  <BookAppointment />
+                  <Layout>
+                    <BookAppointment />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -56,7 +73,9 @@ function App() {
               path="/patient/appointments"
               element={
                 <ProtectedRoute allowedRoles={['patient']}>
-                  <MyAppointments />
+                  <Layout>
+                    <MyAppointments />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -66,7 +85,19 @@ function App() {
               path="/doctor/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['doctor']}>
-                  <DoctorDashboard />
+                  <Layout>
+                    <DoctorDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor/appointment/complete/:id"
+              element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <Layout>
+                    <CompleteAppointment />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -76,7 +107,9 @@ function App() {
               path="/admin/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
+                  <Layout>
+                    <AdminDashboard />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -84,7 +117,9 @@ function App() {
               path="/admin/patients"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <ManagePatients />
+                  <Layout>
+                    <ManagePatients />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -92,7 +127,9 @@ function App() {
               path="/admin/patients/add"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <AddPatient />
+                  <Layout>
+                    <AddPatient />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -100,7 +137,9 @@ function App() {
               path="/admin/doctors"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <ManageDoctors />
+                  <Layout>
+                    <ManageDoctors />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -108,7 +147,9 @@ function App() {
               path="/admin/doctors/add"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <AddDoctor />
+                  <Layout>
+                    <AddDoctor />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -118,7 +159,19 @@ function App() {
               path="/staff/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['staff']}>
-                  <StaffDashboard />
+                  <Layout>
+                    <StaffDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/pharmacy"
+              element={
+                <ProtectedRoute allowedRoles={['staff', 'admin']}>
+                  <Layout>
+                    <PharmacyManagement />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -129,10 +182,10 @@ function App() {
             {/* 404 */}
             <Route path="*" element={<div className="flex items-center justify-center min-h-screen"><h1 className="text-2xl">404 - Page Not Found</h1></div>} />
           </Routes>
-        </div>
       </Router>
     </AuthProvider>
   );
 }
 
 export default App;
+
