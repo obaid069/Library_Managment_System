@@ -30,22 +30,65 @@ const medicalRecordSchema = new mongoose.Schema({
     trim: true
   },
   prescription: [{
+    medicineId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Medicine'
+    },
     medication: String,
     dosage: String,
+    frequency: String,
     duration: String,
-    instructions: String
+    instructions: String,
+    quantity: Number,
+    issued: {
+      type: Boolean,
+      default: false
+    },
+    issuedDate: Date,
+    issuedBy: String
   }],
   labTests: [{
+    labTestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'LabTest'
+    },
     testName: String,
     result: String,
-    date: Date
+    date: Date,
+    isRequired: {
+      type: Boolean,
+      default: false
+    }
   }],
+  admissionRequired: {
+    type: Boolean,
+    default: false
+  },
+  admissionDetails: {
+    wardType: String,
+    estimatedDays: Number,
+    reason: String
+  },
+  dischargeSummary: {
+    dischargeDate: Date,
+    finalDiagnosis: String,
+    treatmentGiven: String,
+    condition: {
+      type: String,
+      enum: ['Improved', 'Cured', 'Stable', 'Referred', 'Deceased']
+    },
+    instructions: String,
+    followUpRequired: Boolean,
+    followUpDate: Date
+  },
   vitalSigns: {
     bloodPressure: String,
     temperature: Number,
     pulse: Number,
     weight: Number,
-    height: Number
+    height: Number,
+    oxygenSaturation: Number,
+    respiratoryRate: Number
   },
   notes: {
     type: String,
