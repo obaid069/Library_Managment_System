@@ -35,6 +35,11 @@ class AppointmentService {
   getAppointmentsByDoctor(doctorId) {
     return apiService.get(`/appointments/doctor/${doctorId}`);
   }
+
+  // Complete appointment
+  completeAppointment(id, appointmentData) {
+    return apiService.put(`/appointments/complete/${id}`, appointmentData);
+  }
 }
 
 export default new AppointmentService();
