@@ -38,7 +38,7 @@ const Sidebar = () => {
         ),
         label: 'Browse Doctors',
         path: '/doctors',
-        roles: ['admin', 'doctor', 'patient', 'staff']
+        roles: ['admin', 'patient', 'staff']
       }
     ];
 

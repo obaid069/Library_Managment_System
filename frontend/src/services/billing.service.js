@@ -12,6 +12,11 @@ class BillingService {
     return apiService.get(`/billing/${id}`);
   }
 
+  // Get bills by patient ID
+  getBillsByPatient(patientId) {
+    return apiService.get(`/billing/patient/${patientId}`);
+  }
+
   // Generate bill
   generateBill(billData) {
     return apiService.post('/billing', billData);

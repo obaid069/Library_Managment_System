@@ -12,6 +12,7 @@ import labTestRoutes from './routes/labtests.js';
 import wardRoutes from './routes/wards.js';
 import billingRoutes from './routes/billing.js';
 import pharmacyRoutes from './routes/pharmacy.js';
+import medicalRecordRoutes from './routes/medicalRecords.js';
 // Load environment variables
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/api/labtests', labTestRoutes);
 app.use('/api/wards', wardRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/pharmacy', pharmacyRoutes);
+app.use('/api/medical-records', medicalRecordRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.json({
@@ -51,7 +53,8 @@ app.get('/', (req, res) => {
       labTests: '/api/labtests',
       wards: '/api/wards',
       billing: '/api/billing',
-      pharmacy: '/api/pharmacy'
+      pharmacy: '/api/pharmacy',
+      medicalRecords: '/api/medical-records'
     }
   });
 });

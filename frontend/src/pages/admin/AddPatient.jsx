@@ -14,6 +14,7 @@ export default function AddPatient() {
     phone: '',
     email: '',
     password: '',
+    confirmPassword: '',
     bloodGroup: '',
     street: '',
     city: '',
@@ -39,6 +40,48 @@ export default function AddPatient() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate email domain
+    if (!formData.email.endsWith('@patient.com')) {
+      setError('Patient email must end with @patient.com');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password strength
+    const password = formData.password;
+    if (password.length < 8 || password.length > 15) {
+      setError('Password must be between 8-15 characters');
+      setLoading(false);
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter');
+      setLoading(false);
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter');
+      setLoading(false);
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number');
+      setLoading(false);
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setError('Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)');
+      setLoading(false);
+      return;
+    }
 
     try {
       // Format data for API
@@ -185,6 +228,9 @@ export default function AddPatient() {
                   className="input-field"
                   required
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Must end with @patient.com
+                </p>
               </div>
 
               <div>
@@ -198,6 +244,24 @@ export default function AddPatient() {
                   onChange={handleChange}
                   className="input-field"
                   placeholder="Login password for patient"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  8-15 characters, must include uppercase, lowercase, number & special character
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password *
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Confirm password"
                   required
                 />
               </div>

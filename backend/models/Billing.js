@@ -148,7 +148,7 @@ const billingSchema = new mongoose.Schema({
 });
 
 // Calculate amount due before saving
-billingSchema.pre('save', function(next) {
+billingSchema.pre('save', function (next) {
   this.amountDue = this.totalAmount - this.amountPaid;
   if (this.amountPaid === 0) {
     this.paymentStatus = 'Unpaid';
@@ -162,11 +162,10 @@ billingSchema.pre('save', function(next) {
 });
 
 // Indexes for efficient querying
+// Note: billId and invoiceNumber already have unique: true which creates indexes
 billingSchema.index({ patientId: 1 });
 billingSchema.index({ appointmentId: 1 });
 billingSchema.index({ paid: 1 });
-billingSchema.index({ billId: 1 });
-billingSchema.index({ invoiceNumber: 1 });
 billingSchema.index({ createdAt: -1 });
 
 const Billing = mongoose.model('Billing', billingSchema);

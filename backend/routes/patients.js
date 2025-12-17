@@ -11,11 +11,11 @@ router.get('/', staffOrAdmin, async (req, res) => {
   try {
     const { status, bloodGroup, gender } = req.query;
     const filter = {};
-    
+
     if (status) filter.status = status;
     if (bloodGroup) filter.bloodGroup = bloodGroup;
     if (gender) filter.gender = gender;
-    
+
     const patients = await Patient.find(filter).select('-__v');
     res.json({
       success: true,
@@ -31,6 +31,19 @@ router.get('/', staffOrAdmin, async (req, res) => {
 router.get('/:id', authenticated, async (req, res) => {
   try {
     const patient = await Patient.findById(req.params.id).select('-__v');
+    if (!patient) {
+      return res.status(404).json({ success: false, error: 'Patient not found' });
+    }
+    res.json({ success: true, data: patient });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET patient by userId (For logged-in patient to get their profile)
+router.get('/user/:userId', authenticated, async (req, res) => {
+  try {
+    const patient = await Patient.findOne({ userId: req.params.userId }).select('-__v');
     if (!patient) {
       return res.status(404).json({ success: false, error: 'Patient not found' });
     }

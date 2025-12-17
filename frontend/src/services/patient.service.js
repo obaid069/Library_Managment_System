@@ -11,6 +11,11 @@ class PatientService {
     return apiService.get(`/patients/${id}`);
   }
 
+  // Get patient by userId (for logged-in user)
+  getPatientByUserId(userId) {
+    return apiService.get(`/patients/user/${userId}`);
+  }
+
   // Create new patient
   createPatient(patientData) {
     return apiService.post('/patients', patientData);

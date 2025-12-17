@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
 
     // Get role-specific record ID
     let roleId = user._id;
-    
+
     if (user.role === 'patient') {
       const patient = await Patient.findOne({ userId: user._id });
       if (patient) {
@@ -44,10 +44,10 @@ router.post('/login', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { 
+      {
         id: roleId, // Use role-specific ID
-        email: user.email, 
-        role: user.role 
+        email: user.email,
+        role: user.role
       },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -62,11 +62,11 @@ router.post('/login', async (req, res) => {
       phone: user.phone
     };
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       data: userData,
       token,
-      message: 'Login successful' 
+      message: 'Login successful'
     });
 
   } catch (error) {
@@ -121,9 +121,9 @@ router.post('/register', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { 
-        id: user._id, 
-        email: user.email, 
+      {
+        id: user._id,
+        email: user.email,
         role: user.role,
         patientId: patient._id
       },
@@ -140,11 +140,11 @@ router.post('/register', async (req, res) => {
       patientId: patient._id
     };
 
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       data: userData,
       token,
-      message: 'Registration successful' 
+      message: 'Registration successful'
     });
 
   } catch (error) {
@@ -160,6 +160,106 @@ router.get('/users', async (req, res) => {
     res.json({ success: true, data: users });
   } catch (error) {
     console.error('Get users error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Forgot Password - Request reset token
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists
+      return res.json({ success: true, message: 'If your email exists, you will receive a reset link' });
+    }
+
+    // Generate reset token (valid for 1 hour)
+    const resetToken = jwt.sign(
+      { id: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // In production, send email with reset link
+    // For now, return token directly (development mode)
+    res.json({
+      success: true,
+      message: 'Reset token generated',
+      resetToken, // Remove in production
+      resetLink: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Reset Password - Reset with token
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset link' });
+    }
+
+    // Find user
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successful' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Change Password - Without authentication (using email + current password)
+router.post('/change-password', async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Email, current password, and new password are required' });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

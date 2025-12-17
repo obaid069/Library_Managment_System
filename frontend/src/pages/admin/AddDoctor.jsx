@@ -11,6 +11,7 @@ export default function AddDoctor() {
     email: '',
     phone: '',
     password: '',
+    confirmPassword: '',
     specialization: '',
     licenseNumber: '',
     department: '',
@@ -45,7 +46,7 @@ export default function AddDoctor() {
     const newAvailability = formData.availability.includes(day)
       ? formData.availability.filter(d => d !== day)
       : [...formData.availability, day];
-    
+
     setFormData({
       ...formData,
       availability: newAvailability
@@ -57,12 +58,57 @@ export default function AddDoctor() {
     setLoading(true);
     setError('');
 
+    // Validate email domain
+    if (!formData.email.endsWith('@doctor.com')) {
+      setError('Doctor email must end with @doctor.com');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate password strength
+    const password = formData.password;
+    if (password.length < 8 || password.length > 15) {
+      setError('Password must be between 8-15 characters');
+      setLoading(false);
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter');
+      setLoading(false);
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter');
+      setLoading(false);
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number');
+      setLoading(false);
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setError('Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)');
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Exclude confirmPassword from backend data
+      const { confirmPassword, ...dataToSend } = formData;
+
       const doctorData = {
-        ...formData,
-        experience: parseInt(formData.experience),
-        consultationFee: parseFloat(formData.consultationFee),
-        password: formData.password
+        ...dataToSend,
+        experience: parseInt(dataToSend.experience),
+        consultationFee: parseFloat(dataToSend.consultationFee),
+        password: dataToSend.password
       };
 
       await doctorService.createDoctor(doctorData);
@@ -119,6 +165,9 @@ export default function AddDoctor() {
                   className="input-field"
                   required
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Must end with @doctor.com
+                </p>
               </div>
 
               <div>
@@ -146,6 +195,24 @@ export default function AddDoctor() {
                   onChange={handleChange}
                   className="input-field"
                   placeholder="Login password for doctor"
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  8-15 characters, must include uppercase, lowercase, number & special character
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password *
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Confirm password"
                   required
                 />
               </div>

@@ -8,7 +8,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ export default function Login() {
 
     try {
       const user = await login(email, password);
-      
+
       // Redirect based on role
       switch (user.role) {
         case 'admin':
@@ -118,6 +118,13 @@ export default function Login() {
           Don't have an account?{' '}
           <Link to="/register" className="text-gray-900 hover:text-gray-700 font-medium underline">
             Register as Patient
+          </Link>
+        </p>
+
+        <p className="mt-4 text-center text-gray-600">
+          Want to change your password?{' '}
+          <Link to="/change-password" className="text-gray-900 hover:text-gray-700 font-medium underline">
+            Change Password
           </Link>
         </p>
       </div>
