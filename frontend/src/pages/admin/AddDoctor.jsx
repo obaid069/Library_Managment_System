@@ -10,6 +10,7 @@ export default function AddDoctor() {
     name: '',
     email: '',
     phone: '',
+    password: '',
     specialization: '',
     licenseNumber: '',
     department: '',
@@ -60,7 +61,8 @@ export default function AddDoctor() {
       const doctorData = {
         ...formData,
         experience: parseInt(formData.experience),
-        consultationFee: parseFloat(formData.consultationFee)
+        consultationFee: parseFloat(formData.consultationFee),
+        password: formData.password
       };
 
       await doctorService.createDoctor(doctorData);
@@ -129,6 +131,21 @@ export default function AddDoctor() {
                   value={formData.phone}
                   onChange={handleChange}
                   className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Login password for doctor"
                   required
                 />
               </div>
