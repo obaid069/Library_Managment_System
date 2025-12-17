@@ -1,5 +1,6 @@
 import express from 'express';
 import Appointment from '../models/Appointment.js';
+import MedicalRecord from '../models/MedicalRecord.js';
 import Patient from '../models/Patient.js';
 import Doctor from '../models/Doctor.js';
 import { authenticated, doctorOnly, adminOnly, staffOrAdmin } from '../middleware/auth.js';
@@ -119,13 +120,23 @@ router.put('/:id', async (req, res) => {
 // PUT complete appointment (Doctor only)
 router.put('/complete/:id', doctorOnly, async (req, res) => {
   try {
-    const { diagnosis, prescription, notes } = req.body;
+    const { 
+      diagnosis, 
+      prescription, 
+      notes, 
+      symptoms,
+      vitalSigns,
+      labTests,
+      admissionRequired,
+      admissionDetails
+    } = req.body;
     
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) {
       return res.status(404).json({ success: false, error: 'Appointment not found' });
     }
     
+    // Update appointment status
     appointment.status = 'Completed';
     appointment.diagnosis = diagnosis;
     appointment.prescription = prescription;
@@ -134,11 +145,30 @@ router.put('/complete/:id', doctorOnly, async (req, res) => {
     
     await appointment.save();
     
+    // Create Medical Record
+    const medicalRecord = await MedicalRecord.create({
+      patientId: appointment.patientId,
+      doctorId: appointment.doctorId,
+      appointmentId: appointment._id,
+      symptoms: symptoms || [],
+      diagnosis: diagnosis,
+      prescription: prescription || [],
+      labTests: labTests || [],
+      vitalSigns: vitalSigns || {},
+      notes: notes,
+      admissionRequired: admissionRequired || false,
+      admissionDetails: admissionDetails || {}
+    });
+    
     const populatedAppointment = await Appointment.findById(appointment._id)
       .populate('patientId', 'name patientId phone email')
       .populate('doctorId', 'name specialization department');
     
-    res.json({ success: true, data: populatedAppointment });
+    res.json({ 
+      success: true, 
+      data: populatedAppointment,
+      medicalRecord: medicalRecord
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -157,6 +187,22 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET all appointments for a patient
+router.get('/patient/:patientId', authenticated, async (req, res) => {
+  try {
+    const appointments = await Appointment.find({
+      patientId: req.params.patientId
+    })
+      .populate('doctorId', 'name specialization department')
+      .select('-__v')
+      .sort({ appointmentDate: -1 });
+    
+    res.json({ success: true, count: appointments.length, data: appointments });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // GET upcoming appointments for a patient
 router.get('/patient/:patientId/upcoming', async (req, res) => {
   try {
@@ -168,6 +214,22 @@ router.get('/patient/:patientId/upcoming', async (req, res) => {
       .populate('doctorId', 'name specialization department')
       .select('-__v')
       .sort({ appointmentDate: 1 });
+    
+    res.json({ success: true, count: appointments.length, data: appointments });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET all appointments for a doctor
+router.get('/doctor/:doctorId', authenticated, async (req, res) => {
+  try {
+    const appointments = await Appointment.find({
+      doctorId: req.params.doctorId
+    })
+      .populate('patientId', 'name patientId phone email')
+      .select('-__v')
+      .sort({ appointmentDate: -1 });
     
     res.json({ success: true, count: appointments.length, data: appointments });
   } catch (error) {
