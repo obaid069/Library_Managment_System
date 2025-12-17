@@ -1,5 +1,7 @@
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import Doctor from '../models/Doctor.js';
+import User from '../models/User.js';
 import { adminOnly, authenticated } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -40,7 +42,35 @@ router.get('/:id', async (req, res) => {
 // POST create doctor (Admin only)
 router.post('/', adminOnly, async (req, res) => {
   try {
-    const doctor = await Doctor.create(req.body);
+    const { password, email, name, phone, ...doctorData } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, error: 'Email already registered' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user account
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      role: 'doctor'
+    });
+
+    // Create doctor record
+    const doctor = await Doctor.create({
+      ...doctorData,
+      name,
+      email,
+      phone,
+      userId: user._id
+    });
+
     res.status(201).json({ success: true, data: doctor });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
