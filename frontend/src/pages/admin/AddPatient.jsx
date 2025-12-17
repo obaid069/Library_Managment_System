@@ -13,6 +13,7 @@ export default function AddPatient() {
     gender: '',
     phone: '',
     email: '',
+    password: '',
     bloodGroup: '',
     street: '',
     city: '',
@@ -48,6 +49,7 @@ export default function AddPatient() {
         gender: formData.gender,
         phone: formData.phone,
         email: formData.email,
+        password: formData.password,
         bloodGroup: formData.bloodGroup,
         address: {
           street: formData.street,
@@ -173,7 +175,7 @@ export default function AddPatient() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  Email *
                 </label>
                 <input
                   type="email"
@@ -181,6 +183,22 @@ export default function AddPatient() {
                   value={formData.email}
                   onChange={handleChange}
                   className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Login password for patient"
+                  required
                 />
               </div>
 
