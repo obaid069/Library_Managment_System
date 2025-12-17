@@ -1,12 +1,25 @@
 import API_BASE_URL from '../config/api';
 
 class ApiService {
+  // Get auth token from localStorage
+  getAuthToken() {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const userData = JSON.parse(user);
+      return userData.token;
+    }
+    return null;
+  }
+
   // Generic request handler
   async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = this.getAuthToken();
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -17,6 +30,11 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
+        // If unauthorized, clear local storage and redirect to login
+        if (response.status === 401) {
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
         throw new Error(data.message || 'Something went wrong');
       }
 

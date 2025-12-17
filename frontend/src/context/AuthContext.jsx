@@ -39,9 +39,13 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userData = result.data;
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return userData;
+      const userWithToken = {
+        ...userData,
+        token: result.token
+      };
+      setUser(userWithToken);
+      localStorage.setItem('user', JSON.stringify(userWithToken));
+      return userWithToken;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -63,9 +67,13 @@ export const AuthProvider = ({ children }) => {
       }
 
       const newUser = result.data;
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      return newUser;
+      const userWithToken = {
+        ...newUser,
+        token: result.token
+      };
+      setUser(userWithToken);
+      localStorage.setItem('user', JSON.stringify(userWithToken));
+      return userWithToken;
     } catch (error) {
       console.error('Registration error:', error);
       throw error;

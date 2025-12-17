@@ -1,8 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { adminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-hospital-2024';
 
 // Login
 router.post('/login', async (req, res) => {
@@ -21,7 +24,18 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Return user data (excluding password)
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        email: user.email, 
+        role: user.role 
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Return user data with token
     const userData = {
       id: user._id,
       name: user.name,
@@ -33,6 +47,7 @@ router.post('/login', async (req, res) => {
     res.json({ 
       success: true, 
       data: userData,
+      token,
       message: 'Login successful' 
     });
 
@@ -67,6 +82,17 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        email: user.email, 
+        role: user.role 
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     const userData = {
       id: user._id,
       name: user.name,
@@ -77,7 +103,8 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ 
       success: true, 
-      data: userData,
+      data: userData,dminOnly, a
+      token,
       message: 'Registration successful' 
     });
 

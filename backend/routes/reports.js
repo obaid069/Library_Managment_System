@@ -3,11 +3,12 @@ import Appointment from '../models/Appointment.js';
 import MedicalRecord from '../models/MedicalRecord.js';
 import Patient from '../models/Patient.js';
 import Doctor from '../models/Doctor.js';
+import { authenticated, adminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET doctor workload (most appointments)
-router.get('/doctor-workload', async (req, res) => {
+// GET doctor workload (most appointments) - Authenticated
+router.get('/doctor-workload', authenticated, async (req, res) => {
   try {
     const result = await Appointment.aggregate([
       {
@@ -53,8 +54,8 @@ router.get('/doctor-workload', async (req, res) => {
   }
 });
 
-// GET active appointments by patient
-router.get('/patient-appointments', async (req, res) => {
+// GET active appointments by patient - Authenticated
+router.get('/patient-appointments', authenticated, async (req, res) => {
   try {
     const result = await Appointment.aggregate([
       { $match: { status: 'Scheduled' } },
@@ -91,8 +92,8 @@ router.get('/patient-appointments', async (req, res) => {
   }
 });
 
-// GET department statistics
-router.get('/department-stats', async (req, res) => {
+// GET department statistics - Admin only
+router.get('/department-stats', adminOnly, async (req, res) => {
   try {
     const result = await Doctor.aggregate([
       {
@@ -121,8 +122,8 @@ router.get('/department-stats', async (req, res) => {
   }
 });
 
-// GET upcoming appointments (next 7 days)
-router.get('/upcoming-appointments', async (req, res) => {
+// GET upcoming appointments (next 7 days) - Authenticated
+router.get('/upcoming-appointments', authenticated, async (req, res) => {
   try {
     const today = new Date();
     const nextWeek = new Date();
@@ -173,8 +174,8 @@ router.get('/upcoming-appointments', async (req, res) => {
   }
 });
 
-// GET dashboard statistics
-router.get('/dashboard', async (req, res) => {
+// GET dashboard statistics - Authenticated
+router.get('/dashboard', authenticated, async (req, res) => {
   try {
     const [totalPatients, totalDoctors, scheduledAppointments, totalMedicalRecords] = await Promise.all([
       Patient.countDocuments({ status: 'Active' }),

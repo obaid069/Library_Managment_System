@@ -1,10 +1,11 @@
 import express from 'express';
 import Patient from '../models/Patient.js';
+import { adminOnly, staffOrAdmin, authenticated } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET all patients with optional filters
-router.get('/', async (req, res) => {
+// GET all patients with optional filters (Staff or Admin)
+router.get('/', staffOrAdmin, async (req, res) => {
   try {
     const { status, bloodGroup, gender } = req.query;
     const filter = {};
@@ -24,8 +25,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET patient by ID
-router.get('/:id', async (req, res) => {
+// GET patient by ID (Authenticated)
+router.get('/:id', authenticated, async (req, res) => {
   try {
     const patient = await Patient.findById(req.params.id).select('-__v');
     if (!patient) {
@@ -37,8 +38,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create patient
-router.post('/', async (req, res) => {
+// POST create patient (Staff or Admin)
+router.post('/', staffOrAdmin, async (req, res) => {
   try {
     const patient = await Patient.create(req.body);
     res.status(201).json({ success: true, data: patient });
@@ -47,8 +48,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update patient
-router.put('/:id', async (req, res) => {
+// PUT update patient (Staff or Admin)
+router.put('/:id', staffOrAdmin, async (req, res) => {
   try {
     req.body.updatedAt = Date.now();
     const patient = await Patient.findByIdAndUpdate(
@@ -65,8 +66,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE patient
-router.delete('/:id', async (req, res) => {
+// DELETE patient (Admin only)
+router.delete('/:id', adminOnly, async (req, res) => {
   try {
     const patient = await Patient.findByIdAndDelete(req.params.id);
     if (!patient) {

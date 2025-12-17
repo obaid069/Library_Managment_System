@@ -2,11 +2,12 @@ import express from 'express';
 import Appointment from '../models/Appointment.js';
 import Patient from '../models/Patient.js';
 import Doctor from '../models/Doctor.js';
+import { authenticated, doctorOnly, adminOnly, staffOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET all appointments with populated data
-router.get('/', async (req, res) => {
+// GET all appointments with populated data (Authenticated)
+router.get('/', authenticated, async (req, res) => {
   try {
     const { status, doctorId, patientId, date } = req.query;
     const filter = {};
@@ -54,8 +55,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST schedule appointment
-router.post('/schedule', async (req, res) => {
+// POST schedule appointment (Authenticated)
+router.post('/schedule', authenticated, async (req, res) => {
   try {
     const { patientId, doctorId, appointmentDate, appointmentTime, reason, duration } = req.body;
     
@@ -115,8 +116,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// PUT complete appointment
-router.put('/complete/:id', async (req, res) => {
+// PUT complete appointment (Doctor only)
+router.put('/complete/:id', doctorOnly, async (req, res) => {
   try {
     const { diagnosis, prescription, notes } = req.body;
     

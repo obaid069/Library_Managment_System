@@ -1,5 +1,6 @@
 import express from 'express';
 import Doctor from '../models/Doctor.js';
+import { adminOnly, authenticated } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -36,8 +37,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create doctor
-router.post('/', async (req, res) => {
+// POST create doctor (Admin only)
+router.post('/', adminOnly, async (req, res) => {
   try {
     const doctor = await Doctor.create(req.body);
     res.status(201).json({ success: true, data: doctor });
@@ -46,8 +47,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update doctor
-router.put('/:id', async (req, res) => {
+// PUT update doctor (Admin only)
+router.put('/:id', adminOnly, async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndUpdate(
       req.params.id,
@@ -63,8 +64,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE doctor
-router.delete('/:id', async (req, res) => {
+// DELETE doctor (Admin only)
+router.delete('/:id', adminOnly, async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndDelete(req.params.id);
     if (!doctor) {
